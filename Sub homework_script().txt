@@ -1,0 +1,114 @@
+Sub homework_script()
+    
+    'Loop through worksheets
+    Dim ws As Worksheet
+    For Each ws In Worksheets
+    
+        'Clearing any existing values
+        ws.Range("I:I").Value = ""
+        ws.Range("J:J").Value = ""
+        ws.Range("K:K").Value = ""
+        ws.Range("L:L").Value = ""
+        ws.Range("N:N").Value = ""
+        ws.Range("O:O").Value = ""
+        ws.Range("P:P").Value = ""
+        
+        'Adding column titles
+        ws.Range("I1").Value = "Ticker"
+        ws.Range("J1").Value = "Yearly Change"
+        ws.Range("K1").Value = "Percent Change"
+        ws.Range("L1").Value = "Total Stock Volume"
+        ws.Range("N2").Value = "Greatest % Increase"
+        ws.Range("N3").Value = "Greatest % Decrease"
+        ws.Range("N4").Value = "Greatest Total Volume"
+        ws.Range("O1").Value = "Ticker"
+        ws.Range("P1").Value = "Value"
+        
+        'Declaring variables
+        Dim totalStockVolume As Double
+        Dim yearly_open As Double
+        Dim yearly_close As Double
+        Dim dateRow As Long
+        Dim summaryRow As Long
+        Dim dateRowCount As Long
+        Dim summaryRowCount As Long
+        Dim greatestPercentIncrease As Double
+        Dim greatestPercentDecrease As Double
+        Dim greatestStockVolume As Double
+        Dim greatestPercentIncreaseTicker As String
+        Dim greatestPercentDecreaseTicker As String
+        Dim greatestStockVolumeTicker As String
+        
+        dateRow = 2
+        summaryRow = 1
+        dateRowCount = ws.Cells(Rows.Count, "B").End(xlUp).Row
+        
+        'For loop that cycles through all entries
+        For dateRow = 2 To dateRowCount
+            'First date
+            If ws.Range("B" & dateRow) = "20200102" Or ws.Range("B" & dateRow) = "20190102" Or ws.Range("B" & dateRow) = "20180102" Then
+                summaryRow = summaryRow + 1
+                ws.Range("I" & summaryRow) = ws.Range("A" & dateRow)
+                yearly_open = ws.Range("C" & dateRow)
+                totalStockVolume = ws.Range("G" & dateRow)
+            
+            'Last date
+            ElseIf ws.Range("B" & dateRow) = "20201231" Or ws.Range("B" & dateRow) = "20191231" Or ws.Range("B" & dateRow) = "20181231" Then
+                yearly_close = ws.Range("F" & dateRow)
+                totalStockVolume = totalStockVolume + ws.Range("G" & dateRow)
+                ws.Range("J" & summaryRow) = yearly_close - yearly_open
+                If ws.Range("J" & summaryRow) > 0 Then
+                    ws.Range("J" & summaryRow).Interior.ColorIndex = 4
+                ElseIf ws.Range("J" & summaryRow) < 0 Then
+                    ws.Range("J" & summaryRow).Interior.ColorIndex = 3
+                End If
+                ws.Range("K" & summaryRow) = ((yearly_open - yearly_close) / yearly_open) * -1
+                ws.Range("K" & summaryRow).NumberFormat = "0.00%"
+                ws.Range("L" & summaryRow) = totalStockVolume
+                
+            'All other dates
+            Else
+                totalStockVolume = totalStockVolume + ws.Range("G" & dateRow)
+            
+            End If
+        Next dateRow
+        
+        'For loop to find the extremities
+        summaryRowCount = ws.Cells(Rows.Count, "I").End(xlUp).Row
+        greatestPercentIncrease = ws.Range("K" & summaryRow)
+        greatestPercentDecrease = ws.Range("K" & summaryRow)
+        greatestStockVolume = ws.Range("L" & summaryRow)
+        greatestPercentIncreaseTicker = ws.Range("I" & summaryRow)
+        greatestPercentDecereaseTicker = ws.Range("I" & summaryRow)
+        greatestStockVolumeTicker = ws.Range("I" & summaryRow)
+        
+        For summaryRow = 2 To summaryRowCount
+            If greatestPercentIncrease < ws.Range("K" & summaryRow) Then
+                greatestPercentIncrease = ws.Range("K" & summaryRow)
+                greatestPercentIncreaseTicker = ws.Range("I" & summaryRow)
+            End If
+            If greatestPercentDecrease > ws.Range("K" & summaryRow) Then
+                greatestPercentDecrease = ws.Range("K" & summaryRow)
+                greatestPercentDecreaseTicker = ws.Range("I" & summaryRow)
+            End If
+            If greatestStockVolume < ws.Range("L" & summaryRow) Then
+                greatestStockVolume = ws.Range("L" & summaryRow)
+                greatestStockVolumeTicker = ws.Range("I" & summaryRow)
+            End If
+        Next summaryRow
+        
+        'Pasting the final answers for greatests
+        ws.Range("O2").Value = greatestPercentIncreaseTicker
+        ws.Range("O3").Value = greatestPercentDecreaseTicker
+        ws.Range("O4").Value = greatestStockVolumeTicker
+        ws.Range("P2").Value = greatestPercentIncrease
+        ws.Range("P3").Value = greatestPercentDecrease
+        ws.Range("P4").Value = greatestStockVolume
+        ws.Range("P2:P3").NumberFormat = "0.00%"
+        
+        ws.Columns("A:Z").AutoFit
+        
+    Next ws
+    
+End Sub
+
